@@ -177,11 +177,17 @@ def retirement_prediction():
 
         # Predicted retirement date: birth + RETIREMENT_AGE years
         retirement_year = emp["data_di_nascita"].year + RETIREMENT_AGE
-        retirement_date = emp["data_di_nascita"].replace(year=retirement_year)
+        try:
+            retirement_date = emp["data_di_nascita"].replace(year=retirement_year)
+        except ValueError:
+            # Handle leap-day births (Feb 29) when retirement year is not a leap year
+            retirement_date = date(retirement_year, 3, 1)
 
         years_to_retirement = _years_between(today, retirement_date)
 
-        total_retirement_age += RETIREMENT_AGE
+        # Actual predicted retirement age accounts for leap-day edge cases
+        predicted_age = _years_between(emp["data_di_nascita"], retirement_date)
+        total_retirement_age += predicted_age
 
         details.append({
             "id": eid,
